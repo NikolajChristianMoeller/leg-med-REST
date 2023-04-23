@@ -24,3 +24,15 @@ a {
 a:hover {
         text-decoration: underline;
       }
+
+#btns {
+  width: 5rem;
+}
+
+.btn-delete {
+  background-color: rebeccapurple
+}
+
+.btn-update {
+  background-color: blueviolet;
+}
