@@ -1,34 +1,25 @@
 "use strict";
 
-window.addEventListener("load", initApp);
+// GLOBAL VARIABLES //
 
 const endpoint = "https://rest-db-33a92-default-rtdb.europe-west1.firebasedatabase.app";
+
+// LOAD AND INIT APP //
+
+window.addEventListener("load", initApp);
 
 async function initApp() {
   updatePostsGrid();
   const posts = await getPosts(`${endpoint}/posts.json`);
   console.log(posts);
   for (const post of posts) {
-    showPosts(post);
+    showPostInDom(post);
   }
   const users = await getUsers(`${endpoint}/users.json`);
   console.log(users);
   for (const user of users) {
-    showPosts(user);
+    showUserInDom(user);
   }
-  createPost(
-    "images.unsplash.com/photo-1642034554560-a344b6f059dd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwyOTA4MTB8MHwxfGFsbHw3fHx8fHx8Mnx8MTY0MjA3NTAwMQ&ixlib=rb-1.2.1&q=80&w=400",
-    "ullabadullahansen@idiot.dk",
-    "Ulla Badulla Hansen",
-    "72 24 12 09",
-    "Tutor test"
-  );
-}
-
-async function deletePost(id) {
-		const url = `${endpoint}/posts/${id}.json`;
-    const response = await fetch(url, { method: "DELETE" });
-    console.log(response);
 }
 
 // CREATE (POST) //
@@ -104,7 +95,7 @@ function prepareData(dataObject) {
 
 function showPosts(posts) {
   document.querySelector("#posts").innerHTML = "";
-  for (const post of posts) {
+  for (const post in posts) {
     showPostInDom(post);
   }
 }
@@ -129,14 +120,14 @@ function showPostInDom(post) {
 
   document.querySelector("#posts p:last-child .btn-delete").addEventListener("click", deleteClicked);
   document.querySelector("#posts p:last-child .btn-update").addEventListener("click", updateClicked);
-}
 
-function deleteClicked() {
-  deletePost(post.id);
-}
+  function updateClicked() {
+    updatePost(post.id, title, body, image);
+  }
 
-function updateClicked() {
-  updatePost(post.id, title, body, image);
+  function deleteClicked() {
+    deletePost(post.id);
+  }
 }
 
 function showUsers(users) {
@@ -161,3 +152,67 @@ function showUserInDom(user) {
   );
 }
 
+
+// SEARCH FUNCTION //
+function inputSearchChanged(event) {
+  const value = event.target.value;
+  const postsToShow = searchPosts(value);
+  showPosts(postsToShow);
+}
+
+function searchPosts(searchValue) {
+    searchValue = searchValue.toLowerCase();
+
+    const results = posts.filter(checkTitle);
+
+function checkTitle(post) {
+    const title = post.title.toLowerCase();
+    return title.includes(searchValue);
+  }
+
+  return results;
+}
+
+// SORT FUNCTION //
+posts.sort(compareTitle);
+
+function compareTitle(post1, post2) {
+    return post1.title.localeCompare(post2.title);
+}
+
+posts.sort(compareBody);
+
+function compareBody(post1, post2) {
+    return post1.body.localeCompare(post2.body);
+}
+
+// FILTER FUNCTION //
+function checkTitle(post) {
+    const title = post.title.toLowerCase();
+    return title.includes(searchValue);
+}
+
+// FIND FUNCTION //
+function findPostById() {
+    const result = posts.find(matchId);
+
+    function matchId(post) {
+        return post.id === id;
+    }
+
+    return result;
+}
+
+// HELPER FUNCTION //
+// convert object of objects til an array of objects
+function prepareData(dataObject) {
+  const array = []; // define empty array
+  // loop through every key in dataObject
+  // the value of every key is an object
+  for (const key in dataObject) {
+    const object = dataObject[key]; // define object
+    object.id = key; // add the key in the prop id
+    array.push(object); // add the object to array
+  }
+  return array; // return array back to "the caller"
+}
